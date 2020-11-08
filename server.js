@@ -50,12 +50,22 @@ const bangBangController = (measured, target, tolerance) => {
 }
 
 const readSensorData = async (sensor_pin) => {
-  const res = await dht11sensor.read(11, sensor_pin);
-  console.log(
-    `temp: ${res.temperature.toFixed(1)}°C, ` +
-    `humidity: ${res.humidity.toFixed(1)}%`
-  );
-  return res;
+  try {
+    const res = await dht11sensor.read(11, sensor_pin);
+    console.log(
+      `temp: ${res.temperature.toFixed(1)}°C, ` +
+      `humidity: ${res.humidity.toFixed(1)}%`
+    );
+    return res;
+  } catch (e) {
+    console.error("COULD NOT READ SENSORDATA :(")
+    //  return fake data for dev purposes
+    return {
+      temperature: 1,
+      humidity: 1
+    }
+  }
+
 }
 
 const startInterval = () => setInterval(async () => {
