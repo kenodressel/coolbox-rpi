@@ -1,0 +1,11 @@
+<html>
+  <body>
+
+  <script>
+    window.sensorData = async () => {
+      const result = await fetch(window.location.pathname + '/sensor')
+      console.log(result)
+    }
+  </script>
+  </body>
+</html>

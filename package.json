@@ -1,0 +1,25 @@
+{
+  "name": "coolbox-rpi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kenodressel/coolbox-rpi.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kenodressel/coolbox-rpi/issues"
+  },
+  "homepage": "https://github.com/kenodressel/coolbox-rpi#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-dht-sensor": "^0.4.3",
+    "rpi-gpio": "^2.1.7"
+  }
+}
