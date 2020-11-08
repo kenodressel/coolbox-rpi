@@ -3,9 +3,11 @@
 
   <script>
     window.sensorData = async () => {
-      const result = await fetch(window.location.pathname + '/sensor')
-      console.log(result)
+      const response = await fetch('/sensor')
+      const data = await response.json();
+      console.log(data)
     }
+    setInterval(() => window.sensorData(), 1000)
   </script>
   </body>
 </html>

@@ -12,16 +12,6 @@ const RELAY_2_PIN_1 = 22;
 const RELAY_2_PIN_2 = 27;
 const INNER_SENSOR = 17;
 
-// DEBUG
-dht11sensor.initialize({
-  test: {
-    fake: {
-      temperature: 21,
-      humidity: 60
-    }
-  }
-});
-
 // global variables
 const target = {
   temperature: 20,
@@ -88,7 +78,7 @@ const startInterval = () => setInterval(async () => {
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', function(req, res) {
-  res.sendFile('./index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 app.get('/sensor', async (req, res) => {
   res.send(sensorData)
