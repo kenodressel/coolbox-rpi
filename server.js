@@ -85,14 +85,18 @@ const startInterval = () => setInterval(async () => {
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/index.html');
+  res.send({
+    hello: "world"
+  })
+  //return res.sendFile(__dirname + '/index.html');
 });
 app.get('/sensor', async (req, res) => {
-  res.send(sensorData)
+  res.send(sensorData);
 });
 app.post('/target', function(req, res) {
   target.temperature = res.body.temperature
   target.humidity = res.body.humidity
+  res.sendStatus(200)
 });
 
 app.listen(PORT, "0.0.0.0",async () => {
