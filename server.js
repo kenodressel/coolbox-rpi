@@ -1,7 +1,6 @@
-const { readFileSync } = require('fs');
-
 const express = require('express');
 const app = express();
+const path = require('path');
 
 const gpio = require('rpi-gpio');
 const gpiop = require('rpi-gpio').promise;
@@ -87,9 +86,7 @@ const startInterval = () => setInterval(async () => {
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', function(req, res) {
-  const content = readFileSync(__dirname + '/index.html')
-  res.send(content)
-  //return res.sendFile(__dirname + '/index.html');
+  res.sendFile(path.join(__dirname + '/index.html'));
 });
 app.get('/sensor', async (req, res) => {
   res.send(sensorData);
