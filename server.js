@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+
 const express = require('express');
 const app = express();
 
@@ -85,10 +87,8 @@ const startInterval = () => setInterval(async () => {
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', function(req, res) {
-  console.log(__dirname + '/index.html')
-  res.send({
-    hello: "world"
-  })
+  const content = readFileSync(__dirname + '/index.html')
+  res.send(content)
   //return res.sendFile(__dirname + '/index.html');
 });
 app.get('/sensor', async (req, res) => {
