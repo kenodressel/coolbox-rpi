@@ -85,6 +85,7 @@ const startInterval = () => setInterval(async () => {
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', function(req, res) {
+  console.log(__dirname + '/index.html')
   res.send({
     hello: "world"
   })
