@@ -8,8 +8,7 @@ const dht11sensor = require("node-dht-sensor").promises;
 // BCM NUMBERING
 gpio.setMode(gpio.MODE_BCM)
 const RELAY_1_PIN = 4;
-const RELAY_2_PIN_1 = 22;
-const RELAY_2_PIN_2 = 27;
+const RELAY_2_PIN = 22;
 const INNER_SENSOR = 17;
 
 // global variables
@@ -22,8 +21,7 @@ const PORT = 3000;
 
 const setup = async () => {
   await gpiop.setup(RELAY_1_PIN, gpiop.DIR_OUT);
-  await gpiop.setup(RELAY_2_PIN_1, gpiop.DIR_OUT);
-  await gpiop.setup(RELAY_2_PIN_2, gpiop.DIR_OUT);
+  await gpiop.setup(RELAY_2_PIN, gpiop.DIR_OUT);
 }
 
 const setPeltierState = async (active) => {
@@ -35,8 +33,7 @@ const setPeltierState = async (active) => {
 const setPeltierHeating = async (heat) => {
   // true = heating
   // false = cooling
-  await gpiop.write(RELAY_2_PIN_1, !!heat);
-  await gpiop.write(RELAY_2_PIN_2, !!heat);
+  await gpiop.write(RELAY_2_PIN, !!heat);
 }
 
 const bangBangController = (measured, target, tolerance) => {
@@ -98,7 +95,7 @@ app.post('/target', function(req, res) {
   target.humidity = res.body.humidity
 });
 
-app.listen(PORT, async () => {
+app.listen(PORT, "0.0.0.0",async () => {
   console.log(`Example app listening at http://localhost:${PORT}`)
   await setup()
   startInterval()
