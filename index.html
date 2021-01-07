@@ -1,13 +1,190 @@
 <html>
-  <body>
-
-  <script>
-    window.sensorData = async () => {
-      const response = await fetch('/sensor')
-      const data = await response.json();
-      console.log(data)
+<head>
+  <title>UI</title>
+  <style>
+    #temperature {
+      margin-bottom: 10px;
     }
-    setInterval(() => window.sensorData(), 1000)
-  </script>
-  </body>
+
+    button {
+      margin-top: 10px;
+    }
+
+    .chart {
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+    }
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="flex justify-center">
+  <div class="container max-w-lg">
+    <div class="text-center font-bold text-4xl m-4">
+      Coolbox
+    </div>
+    <div class="flex justify-center">
+      <div class="text-center m-2 p-4 shadow-lg">
+        <h2 class="font-bold mb-2">Current Temperature</h2>
+        <span id="currentTemperature"></span>&#8451;
+      </div>
+      <div class="text-center m-2 p-4 shadow-lg">
+        <h2 class="font-bold mb-2">Current Humidity</h2>
+        <span id="currentHumidity"></span>%
+      </div>
+      <div class="text-center m-2 p-4 shadow-lg">
+        <h2 class="font-bold mb-2">Current Action</h2>
+        <span id="currentAction"></span>
+      </div>
+    </div>
+
+    <div class="flex justify-center flex-col mb-8">
+      <div class="flex">
+        <div class="text-center p-4 m-2 flex flex-col shadow-lg items-center">
+          <label for="temperature" class="font-bold mb-2">Target Temperature</label>
+          <div class="flex">
+            <input type="number" class="w-1/2" id="temperature">
+            <button class="w-1/2 sendData">Set</button>
+          </div>
+        </div>
+        <div class="text-center p-4 m-2 flex flex-col shadow-lg items-center">
+          <label for="humidity" class="font-bold mb-2">Target Humidity</label>
+          <div class="flex items-center">
+            <input type="number"  class="w-1/2" id="humidity">
+            <button class="w-1/2 sendData">Set</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-center">
+      <div class="chart">
+        <canvas id="historyGraph" width="400" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" type="application/javascript"></script>
+<script>
+  window.sensorData = async () => {
+    const sensor = await fetch('/sensor').then(r => r.json());
+    document.querySelector('#currentTemperature').innerHTML = sensor.temperature.toFixed(1);
+    document.querySelector('#currentHumidity').innerHTML = sensor.humidity.toFixed(1);
+  };
+
+  window.actionData = async () => {
+    const action = await fetch('/peltier').then(r => r.json());
+    document.querySelector('#currentAction').innerHTML = Boolean(action.state) ?
+      (Boolean(action.cooling) ? 'Cooling' : 'Heating') : 'Off';
+  };
+
+  const updateTargets = async () => {
+    const target = await fetch('/target').then(r => r.json());
+    document.querySelector('#temperature').value = target.temperature;
+    document.querySelector('#humidity').value = target.humidity;
+  };
+
+  const createChart = async () => {
+    window.chart = new Chart('historyGraph', {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Temperature',
+          data: [],
+          fill: false,
+          pointRadius: 0,
+          borderColor: 'red',
+        }, {
+          label: 'Humidity',
+          data: [],
+          fill: false,
+          pointRadius: 0,
+          borderColor: 'blue',
+        }, {
+          label: 'Temperature Target',
+          data: [],
+          fill: false,
+          pointRadius: 0,
+          borderColor: 'rgba(255,0,0,0.1)',
+        }, {
+          label: 'Humidity Target',
+          data: [],
+          fill: false,
+          pointRadius: 0,
+          borderColor: 'rgba(0,0,255,0.1)',
+        }],
+      },
+      options: {
+        responsive: true,
+        tooltips: {
+          mode: 'index',
+          intersect: false,
+        },
+        hover: {
+          mode: 'nearest',
+        },
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+          },
+          type: 'time',
+          time: {
+            unit: 'second',
+            displayFormats: {
+              second: 'mm:ss',
+            },
+          },
+        }],
+        yAxes: [{
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Value',
+          },
+        }],
+      },
+    });
+  }
+
+  const showHistory = async () => {
+    const history = await fetch('/history').then(r => r.json());
+    window.chart.data.labels = history.map(x => new Date(x.date).toTimeString().substring(0, 8));
+    window.chart.data.datasets[0].data = history.map(x => x.sensor.temperature);
+    window.chart.data.datasets[1].data = history.map(x => x.sensor.humidity);
+    window.chart.data.datasets[2].data = history.map(x => x.target.temperature);
+    window.chart.data.datasets[3].data = history.map(x => x.target.humidity);
+    window.chart.update();
+  };
+
+  const sendData = () => {
+    fetch('/target', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        temperature: document.querySelector('#temperature').value,
+        humidity: document.querySelector('#humidity').value,
+      }),
+    });
+  };
+
+  document.querySelectorAll('.sendData').forEach(e => e.addEventListener('click', sendData));
+  updateTargets();
+  createChart();
+  window.sensorData();
+  window.actionData();
+  setInterval(() => {
+    window.sensorData();
+    window.actionData();
+  }, 1000);
+  showHistory();
+  setInterval(() => showHistory(), 15000);
+</script>
+</body>
 </html>
