@@ -44,17 +44,25 @@
       <div class="flex">
         <div class="text-center p-4 m-2 flex flex-col shadow-lg items-center">
           <label for="temperature" class="font-bold mb-2">Target Temperature</label>
-          <div class="flex">
+          <div class="flex items-center  flex-col">
             <input type="number" class="w-1/2" id="temperature">
             <button class="w-1/2 sendData">Set</button>
           </div>
         </div>
         <div class="text-center p-4 m-2 flex flex-col shadow-lg items-center">
           <label for="humidity" class="font-bold mb-2">Target Humidity</label>
-          <div class="flex items-center">
+          <div class="flex items-center flex-col">
             <input type="number"  class="w-1/2" id="humidity">
             <button class="w-1/2 sendData">Set</button>
           </div>
+        </div>
+        <div class="text-center p-4 m-2 flex flex-col shadow-lg items-center">
+          <h2 class="font-bold mb-2">Overrides</h2>
+          <div class="flex items-center">
+            <input type="checkbox"  class="w-1/2" id="off">
+            <label for="off" class="font-bold mb-2">Force Off</label>
+          </div>
+          <button class="w-1/2 sendOverrides">Send</button>
         </div>
       </div>
     </div>
@@ -79,6 +87,11 @@
     const action = await fetch('/peltier').then(r => r.json());
     document.querySelector('#currentAction').innerHTML = Boolean(action.state) ?
       (Boolean(action.cooling) ? 'Cooling' : 'Heating') : 'Off';
+  };
+
+  const updateOverrides = async () => {
+    const override = await fetch('/override').then(r => r.json());
+    document.querySelector('#off').checked = Boolean(override.off);
   };
 
   const updateTargets = async () => {
@@ -160,6 +173,19 @@
     window.chart.update();
   };
 
+  const overrideState = () => {
+    fetch('/override', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        off: document.querySelector('#off').checked,
+      }),
+    });
+  };
+
   const sendData = () => {
     fetch('/target', {
       method: 'POST',
@@ -175,8 +201,10 @@
   };
 
   document.querySelectorAll('.sendData').forEach(e => e.addEventListener('click', sendData));
+  document.querySelectorAll('.sendOverrides').forEach(e => e.addEventListener('click', overrideState));
   updateTargets();
   createChart();
+  updateOverrides();
   window.sensorData();
   window.actionData();
   setInterval(() => {

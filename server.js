@@ -28,6 +28,9 @@ const peltier = {
   cooling: false,
 };
 const PORT = 3000;
+const override = {
+  off: false
+}
 
 const setup = async () => {
   await gpiop.setup(RELAY_1_PIN, gpiop.DIR_OUT);
@@ -112,6 +115,11 @@ const startInterval = () => {
   setInterval(async () => {
     sensorData = await readSensorData(INNER_SENSOR);
 
+    if(override.off) {
+      await setPeltierState(false);
+      return;
+    }
+
     const tempAction = bangBangController(sensorData.temperature, target.temperature, 0.5, 1, lastAction);
     lastAction = tempAction;
     console.log('tempAction', tempAction);
@@ -150,7 +158,16 @@ app.get('/peltier', (req, res) => {
   res.send(peltier);
 });
 
-app.post('/target', function (req, res) {
+app.get('/override', (req, res) => {
+  res.send(override);
+});
+
+app.post('/override', (req, res) => {
+  override.off = Boolean(req.body.off);
+  res.sendStatus(200);
+});
+
+app.post('/target',  (req, res) => {
   target.temperature = parseInt(req.body.temperature);
   target.humidity = parseInt(req.body.humidity);
   console.log(target);
