@@ -39,11 +39,12 @@ const setup = async () => {
 };
 
 const setPeltierState = async (active) => {
-  // true = on
-  // false = off
+
   console.log('setPeltierState', active);
   peltier.state = active;
-  await gpiop.write(RELAY_1_PIN, !!active);
+  // true = off
+  // false = on
+  await gpiop.write(RELAY_1_PIN, !active);
 };
 
 const setPeltierCooling = async (cool) => {
@@ -83,6 +84,10 @@ const updateSensorHistory = (sensor) => {
       sensor,
     });
     fs.writeFileSync('./chart.json', JSON.stringify(chartData));
+    // Keep it at 1k to avoid overflow
+    if(sensorHistory.length > 1000) {
+      sensorHistory.splice(0, 30)
+    }
   }
 };
 
@@ -117,6 +122,7 @@ const startInterval = () => {
 
     if(override.off) {
       await setPeltierState(false);
+      await setPeltierCooling(true); // Required :shrug:
       return;
     }
 
@@ -125,6 +131,7 @@ const startInterval = () => {
     console.log('tempAction', tempAction);
     if (tempAction === 0) {
       await setPeltierState(false);
+      await setPeltierCooling(true); // Required :shrug:
     }
     if (tempAction === 1) {
       await setPeltierState(true);
